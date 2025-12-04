@@ -20,7 +20,7 @@ if host_machine.system() == 'windows'
     args += '-DNOMINMAX'
 endif
 
-include_dir = include_directories('include', 'include/koncpp')
+include_dir = include_directories('include')
 
 subdir('src')
 koncpp = shared_library(
@@ -33,12 +33,19 @@ koncpp = shared_library(
     install_dir: get_option('libdir'),
 )
 
-install_subdir('include/koncpp', install_dir: get_option('includedir') / 'koncpp')
+install_subdir(
+    'include/koncpp',
+    install_dir: get_option('includedir'),
+    strip_directory: true,
+)
 
 project_dep = declare_dependency(
-    include_directories: include_directories('include/koncpp'),
+    include_directories: include_directories('include'),
     link_with: koncpp,
+    compile_args: args,
 )
+
+subdir('test')
 
 pkg = import('pkgconfig')
 

@@ -1,3 +1,3 @@
-source_files = files(
-    's.cc'
-)
+subdir('types')
+
+source_files = files() + types_source_files

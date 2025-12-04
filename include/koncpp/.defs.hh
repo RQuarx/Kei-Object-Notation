@@ -28,6 +28,7 @@
         #define KONCPP_LOCAL
     #endif
 #endif
+
 /* clang-format on */
 
 #endif /* KONCPP__DEFS__HH */
