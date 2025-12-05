@@ -1,3 +1,21 @@
+/**
+ * @file koncpp/types/string.hh
+ * @copyright Copyright (C) 2025-2026 Kei <RQuarx@protonmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef KONCPP_TYPES__STRING__HH
 #define KONCPP_TYPES__STRING__HH
 #include <memory>
@@ -13,6 +31,17 @@ namespace koncpp::types
     };
 
 
+    /**
+     * @brief A representation of a string value inside Kei Object Notation.
+     *
+     * The @c String class is a @c Nullable data type that stores an array
+     * of null-terminated bytes.
+     *
+     * @tparam T_Allocator The allocator used to allocate internal storage.
+     *
+     * @warning Operating on a null @c String
+     *          will trigger undefined behaviours.
+     */
     template <typename T_Allocator = std::allocator<char>>
     class String : public BaseType
     {
