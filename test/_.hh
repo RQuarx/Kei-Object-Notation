@@ -5,20 +5,21 @@
 
 namespace
 {
+    [[maybe_unused]]
     void
-    _() /* NOLINT */
+    _()
     {
         std::print("");
     }
 }
 
 
-#define TEST(name, ...)                 \
+#define TEST(name, block)               \
     void                                \
     name()                              \
     {                                   \
         std::print("test {}: ", #name); \
-        __VA_ARGS__                     \
+        block                           \
         std::println("success");        \
     }
 

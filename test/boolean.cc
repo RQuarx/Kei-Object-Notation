@@ -115,7 +115,8 @@ namespace test
         TEST_ASSERT(t != f)
 
         TEST_ASSERT(!(t == n))
-        TEST_ASSERT(n == Boolean {}) TEST_ASSERT(n != t) TEST_ASSERT(n != f)
+        TEST_ASSERT(n == Boolean {})
+        TEST_ASSERT(n != t) TEST_ASSERT(n != f)
     })
 
 

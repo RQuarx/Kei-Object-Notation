@@ -7,93 +7,71 @@
 
 namespace koncpp::types
 {
-    /**
-     * @brief A representation of a string value inside Kei Object Notation.
-     *
-     * The @c String class is a @c Nullable data type that stores a
-     * null-terminated array of bytes. This type works similarly to how
-     * @c std::string works, but slimmer.
-     *
-     * @tparam T_Allocator The allocator used to allocate the internal storage.
-     */
+    struct StringError : public Exception
+    {
+        using Exception::Exception;
+    };
+
+
     template <typename T_Allocator = std::allocator<char>>
     class String : public BaseType
     {
+        using BaseString
+            = std::basic_string<char, std::char_traits<char>, T_Allocator>;
+
     public:
-        using SizeType = std::size_t;
-        static constexpr SizeType Npos { static_cast<SizeType>(-1) };
+        using SizeType = BaseString::size_type;
+
+        using Iterator             = BaseString::iterator;
+        using ConstIterator        = BaseString::const_iterator;
+        using ReverseIterator      = BaseString::reverse_iterator;
+        using ConstReverseIterator = BaseString::const_reverse_iterator;
+
+        static constexpr SizeType Npos { BaseString::npos };
 
 
-        String() noexcept = default;
-        String(const String &other) noexcept
+#pragma region Constructors
+
+        constexpr String() noexcept = default;
+        String(BaseString string) : m_string(std::move(string)) {}
+        String(const char *string) : m_string(BaseString { string }) {}
+        String(std::string_view string)
+            : m_string(BaseString { string.begin(), string.end() })
         {
-            if (other.m_string != nullptr)
-                mf_init_from(other.m_string, other.m_capacity);
         }
 
-        String(String &&other) noexcept
-            : m_string(other.m_string), m_capacity(other.m_capacity)
-        {
-            other.m_string   = nullptr;
-            other.m_capacity = 0;
-        }
+        String(const String &) = default;
+        String(String &&)      = default;
 
+#pragma endregion
 
-        ~String() override { mf_deallocate(); }
+#pragma region Assignments
 
+        auto operator=(const String &) -> String<T_Allocator> &     = default;
+        auto operator=(String &&) noexcept -> String<T_Allocator> & = default;
 
         auto
-        operator=(const char *string) -> String &
+        operator=(BaseString string) -> String<T_Allocator> &
         {
-            mf_deallocate();
-            mf_init_from(string, mf_length(string));
-            return *this;
-        }
-
-
-        auto
-        operator=(const String &other) noexcept -> String &
-        {
-            if (this != &other)
-            {
-                mf_deallocate();
-                if (other.m_string != nullptr)
-                    mf_init_from(other.m_string, other.m_capacity);
-            }
-
+            m_string = std::move(string);
             return *this;
         }
 
         auto
-        operator=(String &&other) noexcept -> String
+        operator=(std::string_view sv) -> String<T_Allocator> &
         {
-            if (this != &other)
-            {
-                mf_deallocate();
-                m_string         = other.m_string;
-                m_capacity       = other.m_capacity;
-                other.m_string   = nullptr;
-                other.m_capacity = 0;
-            }
-
+            m_string = BaseString { sv.begin(), sv.end() };
             return *this;
         }
 
-
-        /**
-         * @brief Duplicate a string @p string into the internal storage.
-         *
-         * @param string The string to be duplicated.
-         * @param length The length of the string, defaults to @e Npos .
-         *               @p string must be null-terminated when
-         *               the value is @e Npos .
-         */
-        String(const char *string, SizeType length = Npos)
+        auto
+        operator=(const char *s) -> String<T_Allocator> &
         {
-            if (string == nullptr) return;
-            mf_init_from(string, length == Npos ? mf_length(string) : length);
+            m_string = BaseString { s };
+            return *this;
         }
 
+#pragma endregion
 
         [[nodiscard]]
         constexpr auto
@@ -103,49 +81,162 @@ namespace koncpp::types
         }
 
 
-    private:
-        char       *m_string { nullptr };
-        SizeType    m_capacity { Npos };
-        T_Allocator m_alloc;
-
-
-        void
-        mf_init_from(const char *s, SizeType len)
+        [[nodiscard]]
+        auto
+        get() const noexcept -> std::optional<BaseString>
         {
-            m_capacity = len;
-            m_string   = m_alloc.allocate(len + 1);
-
-            mf_memcpy(s, m_string, len);
-            m_string[len] = '\0';
+            return m_string;
         }
 
 
         void
-        mf_deallocate()
+        set(BaseString string)
         {
-            if (m_string != nullptr)
-            {
-                m_alloc.deallocate(m_string, m_capacity + 1);
-                m_string = nullptr;
-            }
+            m_string = std::move(string);
+        }
+
+#pragma region Iterators
+
+        [[nodiscard]]
+        auto
+        begin() -> Iterator
+        {
+            return m_string->begin();
         }
 
 
         [[nodiscard]]
-        static auto
-        mf_length(const char *string) -> SizeType
+        auto
+        end() -> Iterator
         {
-            SizeType length { 0 };
-            for (const char *i { string }; *i != '\0'; i++) length++;
-            return length;
+            return m_string->end();
         }
 
 
-        static void
-        mf_memcpy(const char *src, char *dst, SizeType length)
+        [[nodiscard]]
+        auto
+        begin() const -> ConstIterator
         {
-            for (SizeType i { 0 }; i < length; i++) dst[i] = src[i];
+            return m_string->begin();
         }
+
+
+        [[nodiscard]]
+        auto
+        end() const -> ConstIterator
+        {
+            return m_string->end();
+        }
+
+
+        [[nodiscard]]
+        auto
+        cbegin() const -> ConstIterator
+        {
+            return m_string->cbegin();
+        }
+
+        [[nodiscard]]
+        auto
+        cend() const -> ConstIterator
+        {
+            return m_string->cend();
+        }
+
+
+        [[nodiscard]]
+        auto
+        rbegin() -> ReverseIterator
+        {
+            return m_string->rbegin();
+        }
+
+
+        [[nodiscard]]
+        auto
+        rend() -> ReverseIterator
+        {
+            return m_string->rend();
+        }
+
+
+        [[nodiscard]]
+        auto
+        rbegin() const -> ConstReverseIterator
+        {
+            return m_string->rbegin();
+        }
+
+
+        [[nodiscard]]
+        auto
+        rend() const -> ConstReverseIterator
+        {
+            return m_string->rend();
+        }
+
+
+        [[nodiscard]]
+        auto
+        crbegin() const -> ConstReverseIterator
+        {
+            return m_string->crbegin();
+        }
+
+
+        [[nodiscard]]
+        auto
+        crend() const -> ConstReverseIterator
+        {
+            return m_string->crend();
+        }
+
+#pragma endregion
+
+#pragma region Accessors
+
+        [[nodiscard]]
+        auto
+        operator[](SizeType i) -> char &
+        {
+            return m_string[i];
+        }
+
+
+        [[nodiscard]]
+        auto
+        operator[](SizeType i) const -> const char &
+        {
+            return m_string[i];
+        }
+
+
+        [[nodiscard]]
+        auto
+        at(SizeType i) -> char &
+        {
+            return m_string->at(i);
+        }
+
+
+        [[nodiscard]]
+        auto
+        at(SizeType i) const -> const char &
+        {
+            return m_string->at(i);
+        }
+
+
+        [[nodiscard]]
+        auto
+        length() const -> SizeType
+        {
+            return m_string->length();
+        }
+
+
+    private:
+        std::optional<BaseString> m_string;
     };
 }
 

@@ -54,7 +54,6 @@ Boolean::operator=(Boolean &&other) noexcept -> Boolean &
 }
 
 
-[[nodiscard]]
 auto
 Boolean::type() const noexcept -> ValueType
 {
@@ -62,7 +61,6 @@ Boolean::type() const noexcept -> ValueType
 }
 
 
-[[nodiscard]]
 auto
 Boolean::get() const noexcept -> std::optional<bool>
 {
